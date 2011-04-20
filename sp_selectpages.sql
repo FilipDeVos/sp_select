@@ -1,8 +1,8 @@
-use master
-GO
 if OBJECT_ID('sp_selectpages') is not null
-  PRINT 'dropping procedure sp_selectpages'
-  DROP PROCEDURE sp_selectpages
+  BEGIN
+    PRINT 'dropping procedure sp_selectpages'
+    DROP PROCEDURE sp_selectpages
+  END
 GO
 /*
 Original Version: John Huang's

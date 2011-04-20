@@ -1,0 +1,28 @@
+require 'albacore'
+
+$server ='.\sql2008r2'
+$database = 'acc_fsdb35_it1'
+
+desc 'Default task, makes it easy to run:'
+task :default => [:deploy]
+
+def setup_sql(sql=nil, args=nil)
+    args.with_defaults :server => $server
+    args.with_defaults :db => 'master'
+
+    unless sql.nil?
+        sql.server = args.server
+        sql.database = args.db
+        sql.severity = 1
+    end
+end
+
+desc 'list all SQL files to deploy and go to town'
+sqlcmd :deploy, [:server, :db] do |sql, args|
+    setup_sql sql, args
+
+    sql.scripts = Array.new 
+    sql.scripts << 'sp_selectpages.sql'
+    sql.scripts << 'sp_select.sql'
+end
+
