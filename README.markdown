@@ -26,10 +26,10 @@ Now open a second query and run the following statement:
         exec sp_select 'tempdb..#temp'
   
 The result will be
-        id	name
-        --  ---------
-        1	Filip
-        2	Sam
+        id | name
+        -- | ---------
+        1  | Filip
+        2  | Sam
 
 How does it work
 ================
@@ -46,5 +46,5 @@ Once the object_id is determined the procedure sp_selectpages will be used to re
  - Loop over all the pages and store the page content with `DBCC PAGE`
  - use the PIVOT statement to pivot the key/value results to the original table layout
 
-Note: All the fields in the resultset will have the type 'VARCHAR(6000)'
+Note: All the fields in the resultset will have the type `VARCHAR(6000)`
       
