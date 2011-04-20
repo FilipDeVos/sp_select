@@ -19,6 +19,8 @@ exec sp_select 'tempdb..#lala'
 
 exec sp_select 'msdb.dbo.MSdbms'
 
+SELECT * from tempdb.sys.tables where name like '#lala[_]%'
+
   CREATE TABLE #temp (id int, name varchar(200))
         INSERT INTO #temp VALUES (1, 'Filip')
         INSERT INTO #temp VALUES (2, 'Sam')
@@ -26,19 +28,21 @@ exec sp_select 'msdb.dbo.MSdbms'
 */
 CREATE PROCEDURE dbo.sp_select(@table_name sysname, @spid int = NULL, @max_pages int = 1000)
 AS
-
+  SET NOCOUNT ON
+  
   DECLARE @object_id int
         , @table     sysname
         , @db_name   sysname
         , @db_id     int
-        , @file_name  varchar(MAX)  
+        , @file_name varchar(MAX)  
         , @status    int
+        , @rowcount  int
   
   IF PARSENAME(@table_name, 3) = 'tempdb'
     begin
       SET @table = PARSENAME(@table_name, 1)
       
-      IF (SELECT COUNT(*)  from tempdb.sys.tables where name like @table + '[_]%') > 1
+      IF (SELECT COUNT(*)  from tempdb.sys.tables where name like @table + '[_][_]%') > 1
         BEGIN
             -- determine the default trace file
             SELECT @file_name = SUBSTRING(path, 0, LEN(path) - CHARINDEX('\', REVERSE(path)) + 1) + '\Log.trc'  
@@ -46,7 +50,10 @@ AS
             WHERE is_default = 1;  
 
             -- Match the spid with db_id and object_id via the default trace file
-            SELECT top 1 @object_id = o.OBJECT_ID
+            CREATE TABLE #objects (ObjectId sysname primary key)
+            
+            insert into #objects
+            SELECT o.OBJECT_ID
             FROM sys.fn_trace_gettable(@file_name, DEFAULT) AS gt  
             JOIN tempdb.sys.objects AS o   
                  ON gt.ObjectID = o.OBJECT_ID  
@@ -58,12 +65,35 @@ AS
               AND gt.EventClass = 46 -- (Object:Created Event from sys.trace_events)  
               AND o.create_date >= DATEADD(ms, -100, gt.StartTime)   
               AND o.create_date <= DATEADD(ms, 100, gt.StartTime)
-              AND o.name like @table + '[_]%'
+              AND o.name like @table + '[_][_]%'
               AND (gt.SPID = @spid or (@spid is null and dr.dbid = DB_ID()))
+              
+            SET @rowcount = @@ROWCOUNT
+            
+            IF @rowcount = 0 
+              BEGIN
+                RAISERROR('Unable to figure out which temp table with name [%s] to select, please run the procedure on a specific database, or specify a @spid to filter on.', 16,1, @table_name)
+                RETURN(-1)
+              END
+            
+            IF @rowcount > 1 and @spid is null
+              BEGIN
+                RAISERROR('There are %d temp tables with the name [%s] active in your database. Please specify the @spid you wish to find it for.', 16, 1, @rowcount, @table_name)
+                RETURN(-1)
+              END   
+            
+            IF @rowcount > 1
+              BEGIN
+                RAISERROR('There are %d temp tables with the name [%s] active on the spid %d. There must be something wrong in this procedure. Showing the first one', 16, 1, @rowcount, @table_name, @spid)
+                -- We'll continue with the first match.
+              END
+            SELECT TOP 1 @object_id = ObjectId 
+              FROM #objects
+             ORDER BY ObjectId
         END
       ELSE
         BEGIN
-          SELECT @object_id = object_id from tempdb.sys.tables where name like @table + '[_]%'
+          SELECT @object_id = object_id from tempdb.sys.tables where name like @table + '[_][_]%'
         END
     END
   ELSE 
