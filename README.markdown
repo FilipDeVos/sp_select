@@ -26,8 +26,9 @@ Now open a second query and run the following statement:
         exec sp_select 'tempdb..#temp'
   
 The result will be
+
         id | name
-        -- | ---------
+        ---|----------:
         1  | Filip
         2  | Sam
 
