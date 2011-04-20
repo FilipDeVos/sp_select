@@ -27,10 +27,10 @@ Now open a second query and run the following statement:
   
 The result will be
 
-        id | name
-        ---|----------:
-        1  | Filip
-        2  | Sam
+id | name
+---|----------:
+1  | Filip
+2  | Sam
 
 How does it work
 ================
