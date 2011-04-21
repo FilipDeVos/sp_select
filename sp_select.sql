@@ -12,19 +12,16 @@ Based on the post by Jonathan Kehayias
 http://sqlblog.com/blogs/jonathan_kehayias/archive/2009/09/29/what-session-created-that-object-in-tempdb.aspx
 
 Usage:
-create table #lala (id int, value varchar(100))
-insert into #lala values (10, 'hihi'), (11, 'haha')
+    create table #myTempTable (id int, value varchar(100))
+    insert into #myTempTable values (10, 'hihi'), (11, 'haha')
 
-exec sp_select 'tempdb..#lala'
+    Keep the connection open where the temptable is created and run the following query from any connection you want.
 
-exec sp_select 'msdb.dbo.MSdbms'
+    exec sp_select 'tempdb..#myTempTable'
 
-SELECT * from tempdb.sys.tables where name like '#lala[_]%'
+    Also "normal" tables can be inspected.
 
-  CREATE TABLE #temp (id int, name varchar(200))
-        INSERT INTO #temp VALUES (1, 'Filip')
-        INSERT INTO #temp VALUES (2, 'Sam')
-
+    exec sp_select 'msdb.dbo.MSdbms'
 */
 CREATE PROCEDURE dbo.sp_select(@table_name sysname, @spid int = NULL, @max_pages int = 1000)
 AS
@@ -49,9 +46,9 @@ AS
             FROM sys.traces   
             WHERE is_default = 1;  
 
-            -- Match the spid with db_id and object_id via the default trace file
             CREATE TABLE #objects (ObjectId sysname primary key)
             
+            -- Match the spid with db_id and object_id via the default trace file
             insert into #objects
             SELECT o.OBJECT_ID
             FROM sys.fn_trace_gettable(@file_name, DEFAULT) AS gt  
@@ -87,19 +84,20 @@ AS
                 RAISERROR('There are %d temp tables with the name [%s] active on the spid %d. There must be something wrong in this procedure. Showing the first one', 16, 1, @rowcount, @table_name, @spid)
                 -- We'll continue with the first match.
               END
+
             SELECT TOP 1 @object_id = ObjectId 
               FROM #objects
              ORDER BY ObjectId
         END
       ELSE
         BEGIN
-          SELECT @object_id = object_id from tempdb.sys.tables where name like @table + '[_][_]%'
+          SELECT @object_id = object_id FROM tempdb.sys.tables WHERE name LIKE @table + '[_][_]%'
         END
     END
   ELSE 
     SET @object_id = OBJECT_ID(@table_name)
   
-  IF @object_id is null
+  IF @object_id IS NULL
     BEGIN 
       RAISERROR('The table [%s] does not exist', 16, 1, @table_name)
       RETURN (-1)
