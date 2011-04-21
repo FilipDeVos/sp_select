@@ -17,15 +17,15 @@ Once they are deployed you can call the procedure `sp_select` from any database.
 Examples
 ========
 Run the following code in one query window:
-
+        ``` sql
         CREATE TABLE #temp (id int, name varchar(200))
         INSERT INTO #temp VALUES (1, 'Filip')
         INSERT INTO #temp VALUES (2, 'Sam')
- 
+        ```
 Now open a second query and run the following statement:
-
+        ``` sql
         exec sp_select 'tempdb..#temp'
-  
+        ```  
 The result will be
 
 id | name
