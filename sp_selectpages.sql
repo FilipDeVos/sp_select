@@ -111,7 +111,7 @@ BEGIN
     BEGIN
       DELETE #DBCC_Page
       
-      SELECT @SQL = N'DBCC PAGE (' + QUOTENAME(DB_NAME(@db_id)) + N',' + CONVERT(varchar(10), @PageFID) + N',' + CONVERT(varchar(10), @PagePID) + N', 3) WITH TABLERESULTS, NO_INFOMSGS '
+      SELECT @SQL = N'DBCC PAGE (' + QUOTENAME(DB_NAME(@db_id)) + N',' + CONVERT(varchar(11), @PageFID) + N',' + CONVERT(varchar(11), @PagePID) + N', 3) WITH TABLERESULTS, NO_INFOMSGS '
       
       INSERT INTO #DBCC_Page
       EXEC (@SQL)
