@@ -91,7 +91,7 @@ BEGIN
         RETURN(-1)
       END
 
-    SELECT @SQL = N'DBCC IND(' + QUOTENAME(DB_NAME(@db_id)) + N', ' + CONVERT(varchar(10), @object_id) + N', 1) WITH NO_INFOMSGS'
+    SELECT @SQL = N'DBCC IND(' + QUOTENAME(DB_NAME(@db_id)) + N', ' + CONVERT(varchar(11), @object_id) + N', 1) WITH NO_INFOMSGS'
 
     DBCC TRACEON(3604) WITH NO_INFOMSGS
 
