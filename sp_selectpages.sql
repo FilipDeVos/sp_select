@@ -13,7 +13,7 @@ http://fabianosqlserver.spaces.live.com/
 http://www.simple-talk.com/author/fabiano-amorim/
 
 Revised by: Filip De Vos
-http://foxtricks.blogspot.com
+http://foxtricks.com
 
 Usage:
 
@@ -135,15 +135,15 @@ BEGIN
     SELECT @SQL = N' SELECT ' + STUFF(CAST((SELECT N',' + QUOTENAME(Name) + N'' 
                                              FROM #Columns 
                                          ORDER BY ColumnID 
-                                              FOR XML PATH('')) AS varchar(MAX)), 1, 1,'') + '
+                                              FOR XML PATH('')) AS varchar(MAX)), 1, 1, N'') + N'
                     FROM (SELECT CONVERT(varchar(20), Page) + CONVERT(varchar(500), Slot) p
                                , FieldName x_FieldName_x
                                , Value x_Value_x 
                             FROM #Results) Tab
-                    PIVOT(MAX(Tab.x_Value_x) FOR Tab.x_FieldName_x IN( ' + STUFF((SELECT ',' +  QUOTENAME(Name) + '' 
+                    PIVOT(MAX(Tab.x_Value_x) FOR Tab.x_FieldName_x IN( ' + STUFF((SELECT N',' +  QUOTENAME(Name) + N'' 
                                                                                     FROM #Columns 
                                                                                 ORDER BY ColumnID 
-                                                                                     FOR XML PATH('')), 1, 1,'') + ' )
+                                                                                     FOR XML PATH(N'')), 1, 1, N'') + N' )
                     ) AS pvt'
 
     EXEC (@SQL)

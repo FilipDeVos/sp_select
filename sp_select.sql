@@ -31,18 +31,18 @@ AS
         , @table     sysname
         , @db_name   sysname
         , @db_id     int
-        , @file_name varchar(MAX)  
+        , @file_name nvarchar(MAX)  
         , @status    int
         , @rowcount  int
   
-  IF PARSENAME(@table_name, 3) = 'tempdb'
+  IF PARSENAME(@table_name, 3) = N'tempdb'
     begin
       SET @table = PARSENAME(@table_name, 1)
       
-      IF (SELECT COUNT(*)  from tempdb.sys.tables where name like @table + '[_][_]%') > 1
+      IF (SELECT COUNT(*) from tempdb.sys.tables where name like @table + N'[_][_]%') > 1
         BEGIN
             -- determine the default trace file
-            SELECT @file_name = SUBSTRING(path, 0, LEN(path) - CHARINDEX('\', REVERSE(path)) + 1) + '\Log.trc'  
+            SELECT @file_name = SUBSTRING(path, 0, LEN(path) - CHARINDEX(N'\', REVERSE(path)) + 1) + N'\Log.trc'  
             FROM sys.traces   
             WHERE is_default = 1;  
 
@@ -50,10 +50,10 @@ AS
             
             -- Match the spid with db_id and object_id via the default trace file
             insert into #objects
-            SELECT o.OBJECT_ID
+            SELECT o.object_id
             FROM sys.fn_trace_gettable(@file_name, DEFAULT) AS gt  
             JOIN tempdb.sys.objects AS o   
-                 ON gt.ObjectID = o.OBJECT_ID  
+                 ON gt.ObjectID = o.object_id  
             LEFT JOIN (SELECT distinct spid, dbid 
                          FROM master..sysprocesses 
                         WHERE spid = @spid or @spid is null) dr
@@ -62,7 +62,7 @@ AS
               AND gt.EventClass = 46 -- (Object:Created Event from sys.trace_events)  
               AND o.create_date >= DATEADD(ms, -100, gt.StartTime)   
               AND o.create_date <= DATEADD(ms, 100, gt.StartTime)
-              AND o.name like @table + '[_][_]%'
+              AND o.name like @table + N'[_][_]%'
               AND (gt.SPID = @spid or (@spid is null and dr.dbid = DB_ID()))
               
             SET @rowcount = @@ROWCOUNT
@@ -91,7 +91,7 @@ AS
         END
       ELSE
         BEGIN
-          SELECT @object_id = object_id FROM tempdb.sys.tables WHERE name LIKE @table + '[_][_]%'
+          SELECT @object_id = object_id FROM tempdb.sys.tables WHERE name LIKE @table + N'[_][_]%'
         END
     END
   ELSE 
@@ -105,7 +105,7 @@ AS
   
   SET @db_id = DB_ID(PARSENAME(@table_name, 3))
     
-  EXEC @status = master..sp_selectpages @object_id = @object_id, @db_id = @db_id, @max_pages = @max_pages
+  EXEC @status = sp_selectpages @object_id = @object_id, @db_id = @db_id, @max_pages = @max_pages
   
   RETURN (@status)
 GO
