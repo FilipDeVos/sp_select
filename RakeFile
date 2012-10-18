@@ -1,7 +1,7 @@
 require 'albacore'
 
 $server ='.\sql2008r2'
-$database = 'acc_fsdb35_it1'
+$database = 'test'
 
 desc 'Default task, makes it easy to run:'
 task :default => [:deploy]
@@ -23,6 +23,8 @@ sqlcmd :deploy, [:server, :db] do |sql, args|
 
     sql.scripts = Array.new 
     sql.scripts << 'sp_selectpages.sql'
+    sql.scripts << 'sp_select_get_object_id.sql'
+    sql.scripts << 'sp_select_get_rowcount.sql'
     sql.scripts << 'sp_select.sql'
 end
 

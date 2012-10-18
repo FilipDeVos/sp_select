@@ -1,4 +1,6 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using NUnit.Framework;
@@ -11,6 +13,13 @@ namespace SpSelect.Tests
         [Test]
         public void ShouldReturnTableData()
         {
+
+            var dates = new DateTime[]
+                            {
+                                new DateTime(2011, 3, 1),
+                                new DateTime(2011, 3, 2)
+                            };
+
             const int id = 1;
             const string name = "Cornichon";
             const double value = 100.25;
@@ -53,7 +62,7 @@ namespace SpSelect.Tests
             using (var baseConnection = new SqlConnection(ConfigurationManager.AppSettings["ConnectionString"]))
             using (var baseCommand = new SqlCommand())
             {
-                baseCommand.CommandText = string.Format(@"exec sp_select '{0}'", table);
+                baseCommand.CommandText = string.Format("exec sp_select '{0}'", table);
                 baseCommand.CommandType = CommandType.Text;
                 baseCommand.Connection = baseConnection;
 
