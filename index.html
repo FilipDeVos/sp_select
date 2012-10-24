@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Sp Select by FilipDeVos</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Sp Select</h1>
+          <h2>SQL Server TSQL Stored Procedures which enable you to query table data through the data pages directly. This enables you to see the contents of temp tables created on other threads.</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/FilipDeVos/sp_select/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/FilipDeVos/sp_select/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/FilipDeVos/sp_select" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>sp_select and sp_select_get_rowcount</h1>
+
+<p>A very hard to crack issue when debugging TSQL Stored procedures on SQL Server 2005, 2008(r2) or 
+2012 is the fact that you can not see the contents of temp tables outside the session where they 
+are created. This problem is now solved thanks the procedures <code>sp_select</code> and <code>sp_selectpages</code>. 
+This code would not have been possible without the blog posts from <a href="http://mcflyamorim.wordpress.com/2010/05/31/fabiano-vs-dbcc-page/">Fabiano Neves</a> and 
+<a href="http://sqlblog.com/blogs/jonathan_kehayias/archive/2009/09/29/what-session-created-that-object-in-tempdb.aspx">Jonathan Kehayias</a>.</p>
+
+<h1>How to use these procedures</h1>
+
+<p>The procedures can be deployed on the master database with the included rakefile (or just manually 
+open them in SQL Server Management Studio and run them on master)</p>
+
+<p>Once they are deployed you can call the procedure <code>sp_select</code> from any database. The procedure 
+<code>sp_select</code> accepts the following parameters:</p>
+
+<ul>
+<li>@table_name: This is the fully qualified table name to display the contents from. (for example 
+<code>msdb.dbo.MSdbms</code>)</li>
+<li>
+<a href="https://github.com/spid" class="user-mention">@spid</a>: this optional parameter can be used to specify a spid on which the temp table is created. 
+(useful on busy servers)</li>
+<li>@max_pages: this optional parameter is used to limit the amount of data returned. (default 1000)</li>
+</ul><p>To get the rowcount of the table you can run the procedures <code>sp_select_get_rowcount</code> from any 
+database. The procedure <code>sp_select_get_rowcount</code> accepts the following parameters </p>
+
+<ul>
+<li>@table_name: This is the fully qualified table name to display the contents from. (for example 
+<code>msdb.dbo.MSdbms</code>)</li>
+<li>
+<a href="https://github.com/spid" class="user-mention">@spid</a>: this optional parameter can be used to specify a spid on which the temp table is created. 
+(useful on busy servers)</li>
+</ul><h1>Examples</h1>
+
+<p>Run the following code in one query window:</p>
+
+<pre><code>    CREATE TABLE #temp (id int, name varchar(200))
+    INSERT INTO #temp VALUES (1, 'Filip')
+    INSERT INTO #temp VALUES (2, 'Sam')
+</code></pre>
+
+<p>Now open a second query and run the following statement:</p>
+
+<pre><code>    exec sp_select 'tempdb..#temp'
+</code></pre>
+
+<p>The result will be</p>
+
+<table>
+<tr>
+<th>id</th>
+<th align="right">name</th>
+</tr>
+<tr>
+<td>1</td>
+<td align="right">Filip</td>
+</tr>
+<tr>
+<td>2</td>
+<td align="right">Sam</td>
+</tr>
+</table><p>When you want to see the rowcount you run</p>
+
+<pre><code>    exec sp_select_get_rowcount 'tempdb..#temp'
+</code></pre>
+
+<p>The result will be</p>
+
+<table>
+<tr>
+<th align="right">rows</th>
+</tr>
+<tr>
+<td align="right">2</td>
+</tr>
+</table><h1>How does it work</h1>
+
+<p>The procedure <code>sp_select</code> will try to pinpoint the <code>object_id</code> of the table you are trying to get 
+the data from by calling sp_select_get_object_id. When specifying a permanent table this is quite 
+easy the function <code>object_id()</code> will return the correct value.
+When the target is a temp table this is quite difficult as SQL Server does not store a link between 
+the temp table in tempdb and the session in an easily accessible way. There are 3 scenarios 
+implemented in the procedures</p>
+
+<ul>
+<li>There is only 1 temp table with the name you are looking for. ==&gt; get the object_id 
+from <code>tempdb.sys.tables</code>
+</li>
+<li>There are more than 1 temp table with the name you are looking for and you did not specify 
+a <code>@spid</code>. ==&gt; find the first temp table matching the database name of the database you are running 
+the procedure on</li>
+<li>There are more than 1 temp table with the name you are looking for and you did specify a <code>@spid</code> 
+==&gt; match the temp table with the spid by mining the default trace file <code>log.trc</code>. </li>
+</ul><p>Once the <code>object_id</code> is determined the procedure sp_selectpages will be used to return the content.</p>
+
+<ul>
+<li>Use <code>DBCC IND</code> to return the list of pages to look at with <code>DBCC PAGE</code>
+</li>
+<li>Loop over all the pages and store the page content with <code>DBCC PAGE</code>
+</li>
+<li>use the PIVOT statement to pivot the key/value results to the original table layout</li>
+</ul><p>Note: All the fields in the resultset will have the type <code>VARCHAR(6000)</code></p>
+
+<p>The procedure <code>sp_select_get_rowcount</code> will use the same system to pinpoint the <code>object_id</code> and will 
+query the <code>sys.dm_db_partition_stats</code> dmv to get the rowcount. Do note that this view depends on the 
+statistics on the table, so the rowcount can be off a bit. If you suspect this is the case, you can
+run <code>DBCC UPDATEUSAGE (myDatabaseName,"mySchema.myTable");</code> to recalculate the rowcounts. </p>
+        </section>
+
+        <footer>
+          Sp Select is maintained by <a href="https://github.com/FilipDeVos">FilipDeVos</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
