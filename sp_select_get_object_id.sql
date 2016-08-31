@@ -1,15 +1,17 @@
-IF OBJECT_ID('sp_select_get_object_id') is not null
+IF OBJECT_ID('sp_select_get_object_id') is null
   BEGIN
-    PRINT 'dropping procedure sp_select_get_object_id'
-    DROP PROCEDURE sp_select_get_object_id
+    PRINT 'Creating procedure sp_select_get_object_id'
+    EXEC('CREATE PROCEDURE dbo.sp_select_get_object_id AS RETURN(-1)')
   END
 GO
 /*
 declare @object_id int
 exec sp_select_get_object_id 'tempdb..#t', default, @object_id output
-select @object_id
+select @object_id 
 */
-CREATE PROCEDURE sp_select_get_object_id(@table_name sysname, @spid int = null, @object_id int output)
+PRINT 'Altering procedure sp_select_get_object_id'
+GO
+ALTER PROCEDURE dbo.sp_select_get_object_id(@table_name sysname, @spid int = null, @object_id int output)
 As
   DECLARE @table     sysname
         , @db_name   sysname

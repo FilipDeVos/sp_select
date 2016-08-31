@@ -1,12 +1,12 @@
-IF OBJECT_ID('sp_select_get_rowcount') is not null
+IF OBJECT_ID('sp_select_get_rowcount') is null
   BEGIN
-    PRINT 'Dropping procedure sp_select_get_rowcount...'
-    DROP PROCEDURE sp_select_get_rowcount
+    PRINT 'Creating procedure sp_select_get_rowcount...'
+    EXEC ('CREATE PROCEDURE dbo.sp_select_get_rowcount AS RETURN(-1)')
   END
  GO
 /*
 Created by: Filip De Vos
-http://foxtricks.com
+https://foxtricks.com
 
 Usage:
     create table #myTempTable (id int, value varchar(100))
@@ -25,7 +25,9 @@ Usage:
 
 
 */
-CREATE PROCEDURE dbo.sp_select_get_rowcount(@table_name sysname, @spid int = NULL)
+PRINT 'Altering procedure sp_select_get_rowcount...'
+GO
+ALTER PROCEDURE dbo.sp_select_get_rowcount(@table_name sysname, @spid int = NULL)
 AS
   SET NOCOUNT ON
   

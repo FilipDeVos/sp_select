@@ -1,10 +1,10 @@
 sp_select and sp_select_get_rowcount
 ====================================
-A very hard to crack issue when debugging TSQL Stored procedures on SQL Server 2005, 2008(r2) or 
-2012 is the fact that you can not see the contents of temp tables outside the session where they 
-are created. This problem is now solved thanks the procedures `sp_select` and `sp_selectpages`. 
-This code would not have been possible without the blog posts from [Fabiano Neves][1] and 
-[Jonathan Kehayias][2].
+A very hard to crack issue when debugging TSQL Stored procedures on SQL Server from the earliest 
+versions all the way to SQL Server 2016 is the fact that you can not see the contents of temp 
+tables outside the session where they are created. This problem is now solved thanks the procedures 
+`sp_select` and `sp_selectpages`. This code would not have been possible without the blog posts 
+from [Fabiano Neves][1] and [Jonathan Kehayias][2].
 
 How to use these procedures
 ===========================

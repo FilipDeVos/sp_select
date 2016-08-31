@@ -1,7 +1,7 @@
-if OBJECT_ID('sp_selectpages') is not null
+if OBJECT_ID('sp_selectpages') is null
   BEGIN
-    PRINT 'dropping procedure sp_selectpages'
-    DROP PROCEDURE sp_selectpages
+    PRINT 'Creating procedure sp_selectpages'
+    EXEC('CREATE PROCEDURE dbo.sp_selectpages AS RETURN(-1)')
   END
 GO
 /*
@@ -13,7 +13,7 @@ http://fabianosqlserver.spaces.live.com/
 http://www.simple-talk.com/author/fabiano-amorim/
 
 Revised by: Filip De Vos
-http://foxtricks.com
+https://foxtricks.com
 
 Usage:
 
@@ -24,7 +24,9 @@ SET @i = object_id('acc_fsdb35_it1..t_entity')
 
 EXEC dbo.sp_selectpages @object_id = @i, @db_id = @d,  @max_pages = 10000
 */
-CREATE PROCEDURE sp_selectpages(@object_id int, @db_id int = NULL,  @max_pages int = 100)
+PRINT 'Altering procedure sp_selectpages'
+GO
+ALTER PROCEDURE dbo.sp_selectpages(@object_id int, @db_id int = NULL,  @max_pages int = 100)
 AS
 BEGIN
     SET NOCOUNT ON

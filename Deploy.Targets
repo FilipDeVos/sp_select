@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project DefaultTarget="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <server>(localdb)\MSSQLLocalDB</server>
+        <database>master</database>
+        <commandtimeout>120</commandtimeout> 
+    </PropertyGroup>
+
+
+  <UsingTask TaskName="SqlExecuteFile"
+              TaskFactory="CodeTaskFactory"
+              AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <SqlFilePath ParameterType="System.String" Required="true" />
+      <ConnectionString ParameterType="System.String" Required="true" />
+      <ScriptOutput ParameterType="System.String" Output="true" />
+      <CommandTimeout ParameterType="System.Int32" Required="false"/>
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Data" />
+      <Using Namespace="System.IO"/>
+      <Using Namespace="System.Text"/>
+      <Using Namespace="System.Linq"/>
+      <Using Namespace="System.Data.SqlClient"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+            var output = new StringBuilder();
+            var content = File.ReadAllLines(SqlFilePath);
+            var sqlBuffer = new StringBuilder();
+
+            SqlInfoMessageEventHandler messageHandler = (obj, e) => output.AppendLine(e.Message);
+
+            for (var i = 0; i < content.Count(); i++)
+            {
+                var line = content[i];
+
+                if (0 == string.Compare(line.Trim(), "GO", StringComparison.InvariantCultureIgnoreCase) || i+1 == content.Count())
+                {
+                    using (var conn = new SqlConnection(ConnectionString))
+                    using (var cmd = new SqlCommand(i == 0 ? line : sqlBuffer.ToString(), conn))
+                    {
+                        cmd.CommandTimeout = null == CommandTimeout || CommandTimeout == 0 ? 0 : (int)CommandTimeout;
+
+                        conn.InfoMessage += messageHandler;
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                        conn.InfoMessage -= messageHandler;
+                    }
+
+                    sqlBuffer.Clear();
+                } else {
+                    sqlBuffer.AppendLine(line);
+                }
+            }
+
+            ScriptOutput = output.ToString();
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <ItemGroup>
+    <Procedures Include="$(SolutionDir)sp_*.sql" />
+  </ItemGroup>
+
+
+  <Target Name="Build" Outputs="%(Procedures.Identity)">
+    <PropertyGroup>
+      <ProcedureFile>%(Procedures.Identity)</ProcedureFile>
+      <ConnectionString Condition="'$(ConnectionString)'=='' AND '$(user)'!=''">Server=$(server);Database=$(database);User Id=$(user);Password=$(password);</ConnectionString>
+      <ConnectionString Condition="'$(ConnectionString)'=='' AND '$(user)'==''">Server=$(server);Database=$(database);Trusted_Connection=True;</ConnectionString>
+    </PropertyGroup>
+
+    <SqlExecuteFile
+        SqlFilePath="$(ProcedureFile)"
+        ConnectionString="$(ConnectionString)"
+        CommandTimeout="$(commandtimeout)">
+      <Output PropertyName="ScriptOutput" TaskParameter="ScriptOutput" />
+    </SqlExecuteFile>
+    <Message Importance="High" Text="$(ScriptOutput)"/>
+  </Target>
+
+</Project>

@@ -1,12 +1,12 @@
-IF OBJECT_ID('sp_select') is not null
+IF OBJECT_ID('sp_select') is null
   BEGIN
-    PRINT 'Dropping procedure sp_select...'
-    DROP PROCEDURE sp_select
+    PRINT 'Creating procedure sp_select...'
+    EXEC ('CREATE PROCEDURE sp_select AS RETURN(-1)')
   END
  GO
 /*
 Created by: Filip De Vos
-http://foxtricks.blogspot.com
+https://foxtricks.com
 
 Based on the post by Jonathan Kehayias
 http://sqlblog.com/blogs/jonathan_kehayias/archive/2009/09/29/what-session-created-that-object-in-tempdb.aspx
@@ -24,7 +24,9 @@ Usage:
     exec sp_select 'msdb.dbo.MSdbms'
 
 */
-CREATE PROCEDURE dbo.sp_select(@table_name sysname, @spid int = NULL, @max_pages int = 1000)
+PRINT 'Altering procedure sp_select...'
+GO
+ALTER PROCEDURE dbo.sp_select(@table_name sysname, @spid int = NULL, @max_pages int = 1000)
 AS
   SET NOCOUNT ON
   

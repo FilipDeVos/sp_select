@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpSelect.Tests", "SpSelect.Tests\SpSelect.Tests.csproj", "{C9B8947C-FE86-496E-B5C1-6E7C6FCE9A8E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A5D5B7C1-DB24-431D-9AD7-294EC8967EED}"
+	ProjectSection(SolutionItems) = preProject
+		Deploy.Targets = Deploy.Targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Procedures", "Procedures", "{97358FDB-EA1D-40CE-A2A0-BB96DA987B6F}"
+	ProjectSection(SolutionItems) = preProject
+		sp_select.sql = sp_select.sql
+		sp_select_get_object_id.sql = sp_select_get_object_id.sql
+		sp_select_get_rowcount.sql = sp_select_get_rowcount.sql
+		sp_selectpages.sql = sp_selectpages.sql
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C9B8947C-FE86-496E-B5C1-6E7C6FCE9A8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9B8947C-FE86-496E-B5C1-6E7C6FCE9A8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9B8947C-FE86-496E-B5C1-6E7C6FCE9A8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9B8947C-FE86-496E-B5C1-6E7C6FCE9A8E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
