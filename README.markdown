@@ -90,3 +90,13 @@ run `DBCC UPDATEUSAGE (myDatabaseName,"mySchema.myTable");` to recalculate the r
 
 [1]: http://mcflyamorim.wordpress.com/2010/05/31/fabiano-vs-dbcc-page/
 [2]: http://sqlblog.com/blogs/jonathan_kehayias/archive/2009/09/29/what-session-created-that-object-in-tempdb.aspx
+
+## SQL Server 2022 Compatibility
+
+The stored procedures in this repository have been updated to enhance compatibility with SQL Server 2022.
+Changes include:
+- Updated `sp_selectpages` to use `sys.columns` instead of the deprecated `syscolumns` system view.
+- Updated `sp_select_get_object_id` to use `sys.dm_exec_sessions` instead of the deprecated `master..sysprocesses` system view.
+
+**Note on DBCC and Default Trace:**
+The procedures `sp_select_get_object_id` and `sp_selectpages` utilize `DBCC IND`, `DBCC PAGE WITH TABLERESULTS`, and SQL Server's default trace functionality (`sys.traces`, `fn_trace_gettable`). Research into SQL Server 2022 documentation did not reveal any specific breaking changes for these features. However, direct verification was limited. These scripts are provided with the assumption that the core behavior of these `DBCC` commands and default trace mechanisms remains consistent in SQL Server 2022 as in prior versions.

@@ -78,9 +78,9 @@ BEGIN
     CREATE TABLE #Columns(ColumnID integer PRIMARY KEY, 
                           Name     varchar(800))
 
-    select @SQL = N'SELECT colid, name
-                     FROM ' + QUOTENAME(DB_NAME(@db_id)) + N'..syscolumns
-                    WHERE id = @object_id'
+select @SQL = N'SELECT column_id, name
+                 FROM ' + QUOTENAME(DB_NAME(@db_id)) + N'.sys.columns
+                WHERE object_id = @object_id'
 
     INSERT INTO #Columns
     exec sp_executesql @SQL, N'@object_id int', @object_id

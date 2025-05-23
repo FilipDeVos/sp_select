@@ -39,9 +39,9 @@ As
             FROM sys.fn_trace_gettable(@file_name, DEFAULT) AS gt  
             JOIN tempdb.sys.objects AS o   
                  ON gt.ObjectID = o.object_id  
-            LEFT JOIN (SELECT distinct spid, dbid 
-                         FROM master..sysprocesses 
-                        WHERE spid = @spid or @spid is null) dr
+LEFT JOIN (SELECT distinct session_id as spid, database_id as dbid
+           FROM sys.dm_exec_sessions
+           WHERE session_id = @spid or @spid is null) dr
               ON dr.spid = gt.SPID
             WHERE gt.DatabaseID = 2 
               AND gt.EventClass = 46 -- (Object:Created Event from sys.trace_events)  
